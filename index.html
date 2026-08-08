@@ -2,205 +2,416 @@
 
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b1220">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="FoodTracker Pro">
-<title>FoodTracker Pro</title>
-<link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1,viewport-fit=cover"
+
+>
+
+<meta
+name="theme-color"
+content="#0b1220"
+
+>
+
+<meta
+name="apple-mobile-web-app-capable"
+content="yes"
+
+>
+
+<meta
+name="apple-mobile-web-app-status-bar-style"
+content="black-translucent"
+
+>
+
+<meta
+name="apple-mobile-web-app-title"
+content="FoodTracker Pro"
+
+>
+
+  <title>FoodTracker Pro</title>
+
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
 
 <body>
+
 <div class="app">
 
-<header class="topbar">
-  <div>
-    <div class="eyebrow">YOUR DAILY NUTRITION</div>
-    <h1>FoodTracker <span>Pro</span></h1>
-  </div>
-  <button class="icon-btn" id="resetDay">↻</button>
-</header>
+  <!-- TOP BAR -->
 
-<main>
+  <header class="topbar">
+
+```
+<div>
+  <div class="eyebrow">
+    YOUR DAILY NUTRITION
+  </div>
+
+  <h1>
+    FoodTracker <span>Pro</span>
+  </h1>
+</div>
+
+<button
+  class="icon-btn"
+  id="resetDay"
+  type="button"
+>
+  ↻
+</button>
+```
+
+  </header>
+
+  <main>
+
+```
+<!-- CALORIE HERO -->
 
 <section class="hero card">
+
   <div class="hero-top">
+
     <div>
-      <div class="muted">Calories</div>
+
+      <div class="muted">
+        Calories
+      </div>
+
       <div class="big-number">
         <span id="calories">0</span>
-        <small> / 1700 kcal</small>
+        <small>
+          / 1700 kcal
+        </small>
       </div>
+
     </div>
-    <div class="ring" id="calRing">
-      <span id="calPct">0%</span>
+
+    <div
+      class="ring"
+      id="calRing"
+    >
+      <span id="calPct">
+        0%
+      </span>
     </div>
+
   </div>
+
 
   <div class="bar">
     <i id="calBar"></i>
   </div>
 
+
   <div class="stats">
-    <div><b id="protein">0</b><span>Protein / 100g</span></div>
-    <div><b id="carbs">0</b><span>Carbs / 180g</span></div>
-    <div><b id="fat">0</b><span>Fat / 55g</span></div>
+
+    <div>
+      <b id="protein">0</b>
+      <span>
+        Protein / 100g
+      </span>
+    </div>
+
+    <div>
+      <b id="carbs">0</b>
+      <span>
+        Carbs / 180g
+      </span>
+    </div>
+
+    <div>
+      <b id="fat">0</b>
+      <span>
+        Fat / 55g
+      </span>
+    </div>
+
   </div>
+
 </section>
+
+
+<!-- QUICK ACTIONS -->
 
 <section class="quick-grid">
-  <button class="quick card" id="photoBtn">
+
+  <button
+    class="quick card"
+    id="photoBtn"
+    type="button"
+  >
     <strong>📷</strong>
-    <span>Food photo</span>
-    <small>Attach a meal photo</small>
+
+    <span>
+      Food photo
+    </span>
+
+    <small>
+      Attach a meal photo
+    </small>
   </button>
 
-  <button class="quick card" id="waterBtn">
+
+  <button
+    class="quick card"
+    id="waterBtn"
+    type="button"
+  >
     <strong>💧</strong>
-    <span>Water</span>
-    <small><b id="water">0</b> / 3 L</small>
+
+    <span>
+      Water
+    </span>
+
+    <small>
+      <b id="water">0</b> / 3 L
+    </small>
   </button>
+
 </section>
 
-<input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+
+<input
+  id="photoInput"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  hidden
+>
+
+
+<!-- ADD MEAL -->
 
 <section class="card">
 
   <div class="section-head">
+
     <div>
-      <h2>Add a meal</h2>
-      <p>Search a food or enter your own values.</p>
+
+      <h2>
+        Add a meal
+      </h2>
+
+      <p>
+        Search a food or enter your own values.
+      </p>
+
     </div>
+
   </div>
 
-<label>Food name</label>
-<input
-id="foodName"
-autocomplete="off"
-placeholder="e.g. Paneer, rice, dal, whey…"
 
->
+  <label>
+    Food name
 
-  <div id="suggestions" class="suggestions"></div>
+    <input
+      id="foodName"
+      autocomplete="off"
+      placeholder="e.g. Paneer, rice, dal, whey…"
+    >
+  </label>
+
+
+  <div
+    id="suggestions"
+    class="suggestions"
+  ></div>
+
 
   <!-- QUANTITY -->
 
-  <div class="quantity-grid">
+  <div class="quantity-row">
 
-```
-<label>
-  Quantity
-  <input
-    id="quantityInput"
-    type="number"
-    min="0"
-    step="0.1"
-    value="100"
-    placeholder="100"
+    <label>
+      Quantity
+
+      <input
+        id="quantityInput"
+        type="number"
+        min="0"
+        step="0.1"
+        placeholder="e.g. 100"
+      >
+    </label>
+
+
+    <label>
+      Unit
+
+      <select id="unitInput">
+
+        <option value="g">
+          g
+        </option>
+
+        <option value="ml">
+          ml
+        </option>
+
+        <option value="piece">
+          piece
+        </option>
+
+        <option value="scoop">
+          scoop
+        </option>
+
+        <option value="bowl">
+          bowl
+        </option>
+
+        <option value="tbsp">
+          tbsp
+        </option>
+
+      </select>
+
+    </label>
+
+  </div>
+
+
+  <div
+    id="quantityNote"
+    class="quantity-note"
   >
-</label>
-
-<label>
-  Unit
-  <select id="unitInput">
-    <option value="g">grams (g)</option>
-    <option value="ml">millilitres (ml)</option>
-    <option value="piece">piece(s)</option>
-    <option value="scoop">scoop(s)</option>
-    <option value="bowl">bowl(s)</option>
-  </select>
-</label>
-```
-
+    Select a food to calculate nutrition automatically.
   </div>
 
-  <div class="quantity-note" id="quantityNote">
-    Nutrition values are based on 100 g.
-  </div>
+
+  <!-- MACROS -->
 
   <div class="macro-grid">
 
-```
-<label>
-  Calories
-  <input
-    id="caloriesInput"
-    type="number"
-    min="0"
-    step=".1"
-    placeholder="kcal"
-  >
-</label>
+    <label>
+      Calories
 
-<label>
-  Protein
-  <input
-    id="proteinInput"
-    type="number"
-    min="0"
-    step=".1"
-    placeholder="g"
-  >
-</label>
+      <input
+        id="caloriesInput"
+        type="number"
+        min="0"
+        step="0.1"
+        placeholder="kcal"
+      >
+    </label>
 
-<label>
-  Carbs
-  <input
-    id="carbsInput"
-    type="number"
-    min="0"
-    step=".1"
-    placeholder="g"
-  >
-</label>
 
-<label>
-  Fat
-  <input
-    id="fatInput"
-    type="number"
-    min="0"
-    step=".1"
-    placeholder="g"
-  >
-</label>
-```
+    <label>
+      Protein
+
+      <input
+        id="proteinInput"
+        type="number"
+        min="0"
+        step="0.1"
+        placeholder="g"
+      >
+    </label>
+
+
+    <label>
+      Carbs
+
+      <input
+        id="carbsInput"
+        type="number"
+        min="0"
+        step="0.1"
+        placeholder="g"
+      >
+    </label>
+
+
+    <label>
+      Fat
+
+      <input
+        id="fatInput"
+        type="number"
+        min="0"
+        step="0.1"
+        placeholder="g"
+      >
+    </label>
 
   </div>
 
-  <button class="primary" id="addMeal">
+
+  <button
+    class="primary"
+    id="addMeal"
+    type="button"
+  >
     ＋ Add meal
   </button>
 
 </section>
 
+
+<!-- TODAY'S MEALS -->
+
 <section class="card">
 
   <div class="section-head">
+
     <div>
-      <h2>Today's meals</h2>
-      <p id="mealSummary">Nothing logged yet</p>
+
+      <h2>
+        Today's meals
+      </h2>
+
+      <p id="mealSummary">
+        Nothing logged yet
+      </p>
+
     </div>
+
   </div>
 
   <div id="mealList"></div>
 
 </section>
 
+
+<!-- COACH -->
+
 <section class="card advice">
 
   <div class="section-head">
+
     <div>
-      <h2>Coach</h2>
-      <p>Based on today's intake</p>
+
+      <h2>
+        Coach
+      </h2>
+
+      <p>
+        Based on today's intake
+      </p>
+
     </div>
 
-```
-<span class="score" id="score">—</span>
-```
+    <span
+      class="score"
+      id="score"
+    >
+      —
+    </span>
 
   </div>
 
@@ -209,12 +420,13 @@ placeholder="e.g. Paneer, rice, dal, whey…"
   </div>
 
 </section>
+```
 
-</main>
+  </main>
 
-<footer>
-  FoodTracker Pro • Your data stays on this device
-</footer>
+  <footer>
+    FoodTracker Pro • Your data stays on this device
+  </footer>
 
 </div>
 
