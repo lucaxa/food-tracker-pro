@@ -87,7 +87,7 @@
 "carbs": 8,
 "fat": 3,
 "baseQuantity": 1,
-"baseUnit": "bowl"
+"baseUnit": "cup"
 },
 {
 "name": "Banana",
@@ -132,6 +132,6 @@
 "carbs": 3,
 "fat": 8,
 "baseQuantity": 1,
-"baseUnit": "piece"
+"baseUnit": "tbsp"
 }
 ]
