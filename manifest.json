@@ -1,0 +1,10 @@
+{
+  "name": "FoodTracker Pro",
+  "short_name": "FoodTracker",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "description": "Personal calorie and nutrition tracker",
+  "orientation": "portrait"
+}
