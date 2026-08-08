@@ -9,129 +9,218 @@ water: 3
 const KEY = "foodtracker_v2";
 
 let state = JSON.parse(
-localStorage.getItem(KEY) || '{"meals":[],"water":0}'
+localStorage.getItem(KEY) ||
+'{"meals":[],"water":0}'
 );
 
 let foods = [];
 let usdaTimer = null;
+
 let selectedBaseNutrition = null;
 
-const $ = id => document.getElementById(id);
+const $ = id =>
+document.getElementById(id);
+
+/* =========================================
+STORAGE
+========================================= */
 
 function save() {
-localStorage.setItem(KEY, JSON.stringify(state));
-}
-
-/* -----------------------------
-TOTALS
------------------------------ */
-
-function totals() {
-return state.meals.reduce(
-(a, m) => ({
-calories: a.calories + Number(m.calories || 0),
-protein: a.protein + Number(m.protein || 0),
-carbs: a.carbs + Number(m.carbs || 0),
-fat: a.fat + Number(m.fat || 0)
-}),
-{
-calories: 0,
-protein: 0,
-carbs: 0,
-fat: 0
-}
+localStorage.setItem(
+KEY,
+JSON.stringify(state)
 );
 }
 
-/* -----------------------------
-ESCAPE HTML
------------------------------ */
+/* =========================================
+TOTALS
+========================================= */
 
-function esc(s) {
-return String(s).replace(/[&<>"']/g, c => ({
+function totals() {
+
+return state.meals.reduce(
+(total, meal) => {
+
+```
+  total.calories +=
+    Number(meal.calories) || 0;
+
+  total.protein +=
+    Number(meal.protein) || 0;
+
+  total.carbs +=
+    Number(meal.carbs) || 0;
+
+  total.fat +=
+    Number(meal.fat) || 0;
+
+  return total;
+
+},
+{
+  calories: 0,
+  protein: 0,
+  carbs: 0,
+  fat: 0
+}
+```
+
+);
+}
+
+/* =========================================
+HTML ESCAPE
+========================================= */
+
+function esc(value) {
+
+return String(value).replace(
+/[&<>"']/g,
+character => ({
 "&": "&",
 "<": "<",
 ">": ">",
 '"': """,
 "'": "'"
-}[c]));
+})[character]
+);
 }
 
-/* -----------------------------
-RENDER
------------------------------ */
+/* =========================================
+RENDER DASHBOARD
+========================================= */
 
 function render() {
-const t = totals();
 
-const p = Math.min(
+const total = totals();
+
+const percentage = Math.min(
 100,
-(t.calories / GOALS.calories) * 100
+(total.calories / GOALS.calories) * 100
 );
 
-$("calories").textContent = Math.round(t.calories);
-$("protein").textContent = Math.round(t.protein);
-$("carbs").textContent = Math.round(t.carbs);
-$("fat").textContent = Math.round(t.fat);
-$("water").textContent = state.water.toFixed(1);
+$("calories").textContent =
+Math.round(total.calories);
 
-$("calBar").style.width = p + "%";
+$("protein").textContent =
+Math.round(total.protein);
+
+$("carbs").textContent =
+Math.round(total.carbs);
+
+$("fat").textContent =
+Math.round(total.fat);
+
+$("water").textContent =
+Number(state.water).toFixed(1);
+
+$("calBar").style.width =
+percentage + "%";
+
 $("calRing").style.setProperty(
 "--deg",
-p * 3.6 + "deg"
+percentage * 3.6 + "deg"
 );
 
 $("calPct").textContent =
-Math.round(p) + "%";
+Math.round(percentage) + "%";
 
 $("mealSummary").textContent =
 state.meals.length
 ? `${state.meals.length} meal${
-          state.meals.length === 1 ? "" : "s"
-        } • ${Math.round(t.calories)} kcal`
+          state.meals.length === 1
+            ? ""
+            : "s"
+        } • ${Math.round(
+          total.calories
+        )} kcal`
 : "Nothing logged yet";
+
+/* MEAL LIST */
 
 $("mealList").innerHTML =
 state.meals
 .map(
-(m, i) => ` <div class="meal">
+(meal, index) => `
 
 ```
+      <div class="meal">
+
         ${
-          m.photo
-            ? `<img src="${m.photo}" style="width:50px;height:50px;object-fit:cover;border-radius:10px;">`
+          meal.photo
+            ? `
+              <img
+                src="${meal.photo}"
+                alt=""
+                style="
+                  width:50px;
+                  height:50px;
+                  object-fit:cover;
+                  border-radius:10px;
+                "
+              >
+            `
             : ""
         }
 
         <div class="meal-main">
 
-          <b>${esc(m.name)}</b>
+          <strong>
+            ${esc(meal.name)}
+          </strong>
 
           ${
-            m.quantity
-              ? `<small>${m.quantity} ${esc(
-                  m.unit || "g"
-                )}</small>`
+            meal.quantity
+              ? `
+                <small>
+                  ${meal.quantity}
+                  ${esc(
+                    meal.unit || "g"
+                  )}
+                </small>
+              `
               : ""
           }
 
+          <div class="meal-macros">
+
+            ${Math.round(
+              meal.protein
+            )}g protein •
+
+            ${Math.round(
+              meal.carbs
+            )}g carbs •
+
+            ${Math.round(
+              meal.fat
+            )}g fat
+
+          </div>
+
+        </div>
+
+
+        <div class="meal-kcal">
+
+          ${Math.round(
+            meal.calories
+          )}
+
           <small>
-            ${Math.round(m.protein)}g protein •
-            ${Math.round(m.carbs)}g carbs •
-            ${Math.round(m.fat)}g fat
+            kcal
           </small>
 
         </div>
 
-        <div class="meal-kcal">
-          ${Math.round(m.calories)}
-          <small> kcal</small>
-        </div>
 
         <button
           class="delete"
-          data-i="${i}"
-        >×</button>
+          data-i="${index}"
+          type="button"
+        >
+          ×
+        </button>
 
       </div>
     `
@@ -139,23 +228,31 @@ state.meals
   .join("");
 ```
 
+/* DELETE BUTTONS */
+
 document
 .querySelectorAll(".delete")
 .forEach(button => {
-button.onclick = () => {
-state.meals.splice(
-Number(button.dataset.i),
-1
-);
 
 ```
+  button.onclick = () => {
+
+    state.meals.splice(
+      Number(button.dataset.i),
+      1
+    );
+
     save();
     render();
   };
+
 });
 ```
 
-$("adviceText").innerHTML = advice(t);
+$("adviceText").innerHTML =
+advice(total);
+
+/* SCORE */
 
 $("score").textContent =
 state.meals.length
@@ -164,120 +261,239 @@ state.meals.length
 Math.min(
 10,
 5 +
-(t.protein / GOALS.protein) * 3 +
-(t.calories <= GOALS.calories ? 2 : 0)
+(total.protein /
+GOALS.protein) *
+3 +
+(
+total.calories <=
+GOALS.calories
+? 2
+: 0
+)
 )
 ).toFixed(1) + "/10"
 : "—";
 }
 
-/* -----------------------------
+/* =========================================
 COACH
------------------------------ */
+========================================= */
 
-function advice(t) {
+function advice(total) {
+
 if (!state.meals.length) {
-return "Add your first meal and I'll give you a simple nutrition check.";
-}
-
-const cal = Math.round(
-GOALS.calories - t.calories
-);
-
-const pro = Math.round(
-GOALS.protein - t.protein
-);
-
-if (t.calories > GOALS.calories) {
-return `You've passed your <b>${GOALS.calories} kcal</b> target by ${Math.round(
-      t.calories - GOALS.calories
-    )} kcal. Keep the rest of today light and protein-focused.`;
-}
-
-if (pro > 0) {
-return `You have about <b>${Math.max(
-      0,
-      cal
-    )} kcal</b> and <b>${pro}g protein</b> left. A protein-rich meal would be a good next choice.`;
-}
-
-return `Nice work — you're at <b>${Math.round(
-    t.protein
-  )}g protein</b>. You have about <b>${Math.max(
-    0,
-    cal
-  )} kcal</b> remaining today.`;
-}
-
-/* -----------------------------
-LOCAL FOOD DATABASE
------------------------------ */
-
-async function loadFoods() {
-try {
-const response = await fetch(
-"./foods.json",
-{
-cache: "no-store"
-}
-);
 
 ```
+return (
+  "Add your first meal and I'll give you a simple nutrition check."
+);
+```
+
+}
+
+const caloriesLeft =
+Math.round(
+GOALS.calories -
+total.calories
+);
+
+const proteinLeft =
+Math.round(
+GOALS.protein -
+total.protein
+);
+
+if (
+total.calories >
+GOALS.calories
+) {
+
+```
+return `
+  You've passed your
+  <b>${GOALS.calories} kcal</b>
+  target by
+  ${Math.round(
+    total.calories -
+    GOALS.calories
+  )}
+  kcal.
+  Keep the rest of today
+  light and protein-focused.
+`;
+```
+
+}
+
+if (proteinLeft > 0) {
+
+```
+return `
+  You have about
+  <b>${Math.max(
+    0,
+    caloriesLeft
+  )} kcal</b>
+  and
+  <b>${proteinLeft}g protein</b>
+  left.
+  A protein-rich meal would
+  be a good next choice.
+`;
+```
+
+}
+
+return `
+Nice work — you're at <b>${Math.round(
+total.protein
+)}g protein</b>.
+
+```
+You have about
+<b>${Math.max(
+  0,
+  caloriesLeft
+)} kcal</b>
+remaining today.
+```
+
+`;
+}
+
+/* =========================================
+LOAD LOCAL FOODS
+========================================= */
+
+async function loadFoods() {
+
+try {
+
+```
+const response =
+  await fetch(
+    "./foods.json?version=2",
+    {
+      cache: "no-store"
+    }
+  );
+
+
 if (!response.ok) {
+
   throw new Error(
-    `foods.json failed: ${response.status}`
+    `foods.json returned ${response.status}`
   );
 }
 
-const data = await response.json();
 
-foods = Array.isArray(data)
-  ? data
-  : [];
+const data =
+  await response.json();
+
+
+if (!Array.isArray(data)) {
+
+  throw new Error(
+    "foods.json is not an array"
+  );
+}
+
+
+foods = data;
+
 
 console.log(
-  `Food database loaded: ${foods.length} foods`
+  "Food database loaded:",
+  foods.length,
+  "foods"
 );
 ```
 
 } catch (error) {
-console.error(
-"Local food database error:",
-error
-);
 
 ```
+console.error(
+  "Could not load foods.json:",
+  error
+);
+
 foods = [];
 ```
 
 }
 }
 
-/* -----------------------------
+/* =========================================
 QUANTITY
------------------------------ */
+========================================= */
 
 function getQuantity() {
+
 return Number(
 $("quantityInput").value
 ) || 0;
 }
 
-function updateNutritionFromQuantity() {
-if (!selectedBaseNutrition) {
-return;
+function setBaseNutrition(data) {
+
+selectedBaseNutrition = {
+
+```
+calories:
+  Number(data.calories) || 0,
+
+protein:
+  Number(data.protein) || 0,
+
+carbs:
+  Number(data.carbs) || 0,
+
+fat:
+  Number(data.fat) || 0,
+
+baseQuantity:
+  Number(data.baseQuantity) || 100,
+
+baseUnit:
+  data.baseUnit || "g"
+```
+
+};
+
+$("unitInput").value =
+selectedBaseNutrition.baseUnit;
+
+$("quantityInput").value =
+selectedBaseNutrition.baseQuantity;
+
+updateNutritionFromQuantity();
 }
 
-const quantity = getQuantity();
+function updateNutritionFromQuantity() {
+
+if (
+!selectedBaseNutrition
+) {
+
+```
+return;
+```
+
+}
+
+const quantity =
+getQuantity();
 
 if (quantity <= 0) {
+
+```
 return;
+```
+
 }
 
 const baseQuantity =
-Number(
-selectedBaseNutrition.baseQuantity
-) || 100;
+selectedBaseNutrition.baseQuantity;
 
 const multiplier =
 quantity / baseQuantity;
@@ -310,88 +526,76 @@ $("quantityNote").textContent =
 `Calculated from ${baseQuantity} ${selectedBaseNutrition.baseUnit}.`;
 }
 
-function setBaseNutrition({
-calories = 0,
-protein = 0,
-carbs = 0,
-fat = 0,
-baseQuantity = 100,
-baseUnit = "g"
-}) {
-selectedBaseNutrition = {
-calories: Number(calories) || 0,
-protein: Number(protein) || 0,
-carbs: Number(carbs) || 0,
-fat: Number(fat) || 0,
-baseQuantity:
-Number(baseQuantity) || 100,
-baseUnit: baseUnit || "g"
-};
-
-$("unitInput").value =
-selectedBaseNutrition.baseUnit;
-
-$("quantityInput").value =
-selectedBaseNutrition.baseQuantity;
-
-updateNutritionFromQuantity();
-}
-
-/* -----------------------------
-LOCAL FOOD SELECTION
------------------------------ */
+/* =========================================
+SELECT LOCAL FOOD
+========================================= */
 
 function fill(food) {
+
 $("foodName").value =
 food.name;
 
 setBaseNutrition({
-calories: food.calories,
-protein: food.protein,
-carbs: food.carbs,
-fat: food.fat,
+
+```
+calories:
+  food.calories,
+
+protein:
+  food.protein,
+
+carbs:
+  food.carbs,
+
+fat:
+  food.fat,
+
 baseQuantity:
-food.baseQuantity || 100,
+  food.baseQuantity || 100,
+
 baseUnit:
-food.baseUnit || "g"
+  food.baseUnit || "g"
+```
+
 });
 
-$("suggestions").innerHTML = "";
+$("suggestions").innerHTML =
+"";
 }
 
-/* -----------------------------
+/* =========================================
 USDA NUTRIENTS
------------------------------ */
+========================================= */
 
-function getNutrient(food, nutrientId) {
-const item =
-food.foodNutrients?.find(
-n =>
-Number(n.nutrientId) ===
+function getNutrient(
+food,
 nutrientId
-);
+) {
 
-return item
-? Number(item.value || 0)
+const nutrient =
+Array.isArray(
+food.foodNutrients
+)
+? food.foodNutrients.find(
+item =>
+Number(
+item.nutrientId
+) === nutrientId
+)
+: null;
+
+return nutrient
+? Number(
+nutrient.value || 0
+)
 : 0;
 }
 
-/* -----------------------------
-USDA FOOD SELECTION
------------------------------ */
+/* =========================================
+SELECT USDA FOOD
+========================================= */
 
 function fillUSDA(food) {
-const calories =
-getNutrient(food, 1008);
-
-const protein =
-getNutrient(food, 1003);
-
-const carbs =
-getNutrient(food, 1005);
-
-const fat =
-getNutrient(food, 1004);
 
 $("foodName").value =
 food.description ||
@@ -399,42 +603,76 @@ food.lowercaseDescription ||
 "Food";
 
 setBaseNutrition({
-calories,
-protein,
-carbs,
-fat,
-baseQuantity: 100,
-baseUnit: "g"
-});
-
-$("suggestions").innerHTML = "";
-}
-
-/* -----------------------------
-USDA SEARCH
------------------------------ */
-
-async function searchUSDA(query) {
-try {
-const response =
-await fetch(
-`/api/foods?query=${encodeURIComponent(
-          query
-        )}`
-);
 
 ```
+calories:
+  getNutrient(
+    food,
+    1008
+  ),
+
+protein:
+  getNutrient(
+    food,
+    1003
+  ),
+
+carbs:
+  getNutrient(
+    food,
+    1005
+  ),
+
+fat:
+  getNutrient(
+    food,
+    1004
+  ),
+
+baseQuantity: 100,
+
+baseUnit: "g"
+```
+
+});
+
+$("suggestions").innerHTML =
+"";
+}
+
+/* =========================================
+USDA SEARCH
+========================================= */
+
+async function searchUSDA(
+query
+) {
+
+try {
+
+```
+const response =
+  await fetch(
+    `/api/foods?query=${encodeURIComponent(
+      query
+    )}`
+  );
+
+
 if (!response.ok) {
+
   console.warn(
-    "USDA unavailable:",
+    "USDA API unavailable:",
     response.status
   );
 
   return [];
 }
 
+
 const data =
   await response.json();
+
 
 return Array.isArray(
   data.foods
@@ -444,119 +682,188 @@ return Array.isArray(
 ```
 
 } catch (error) {
-console.warn(
-"USDA search unavailable:",
-error
-);
 
 ```
+console.warn(
+  "USDA search failed:",
+  error
+);
+
 return [];
 ```
 
 }
 }
 
-/* -----------------------------
-LOCAL RESULTS
------------------------------ */
+/* =========================================
+SHOW LOCAL RESULTS
+========================================= */
 
-function showLocalResults(results) {
-$("suggestions").innerHTML =
-`<div style="padding:6px 10px;font-size:12px;opacity:.7;">
-      Local foods     </div>` +
+function showLocalResults(
 results
-.map(
-(food, index) =>
-`<button data-local="${index}">
-            ${esc(food.name)}           </button>`
-)
-.join("");
+) {
+
+$("suggestions").innerHTML = `
+
+```
+<div
+  style="
+    padding:6px 10px;
+    font-size:12px;
+    opacity:.7;
+  "
+>
+  Local foods
+</div>
+
+${results
+  .map(
+    (food, index) => `
+
+      <button
+        type="button"
+        data-local="${index}"
+      >
+        ${esc(food.name)}
+      </button>
+
+    `
+  )
+  .join("")}
+```
+
+`;
 
 document
 .querySelectorAll(
-"#suggestions button[data-local]"
+"#suggestions [data-local]"
 )
 .forEach(button => {
-button.onclick = () => {
-fill(
-results[
-Number(
-button.dataset.local
-)
-]
-);
-};
+
+```
+  button.onclick =
+    () => {
+
+      fill(
+        results[
+          Number(
+            button.dataset.local
+          )
+        ]
+      );
+
+    };
+
 });
+```
+
 }
 
-/* -----------------------------
-USDA RESULTS
------------------------------ */
+/* =========================================
+SHOW USDA RESULTS
+========================================= */
 
-function showUSDAResults(results) {
+function showUSDAResults(
+results
+) {
+
 if (!results.length) {
 return;
 }
 
-$("suggestions").innerHTML =
-`<div style="padding:6px 10px;font-size:12px;opacity:.7;">
-      USDA results     </div>` +
-results
-.slice(0, 8)
-.map(
-(food, index) =>
-`<button data-usda="${index}">
-            ${esc(
-              food.description ||
-              "Food"
-            )}           </button>`
-)
-.join("");
+$("suggestions").innerHTML = `
+
+```
+<div
+  style="
+    padding:6px 10px;
+    font-size:12px;
+    opacity:.7;
+  "
+>
+  USDA results
+</div>
+
+${results
+  .slice(0, 8)
+  .map(
+    (food, index) => `
+
+      <button
+        type="button"
+        data-usda="${index}"
+      >
+        ${esc(
+          food.description ||
+          "Food"
+        )}
+      </button>
+
+    `
+  )
+  .join("")}
+```
+
+`;
 
 document
 .querySelectorAll(
-"#suggestions button[data-usda]"
+"#suggestions [data-usda]"
 )
 .forEach(button => {
-button.onclick = () => {
-fillUSDA(
-results[
-Number(
-button.dataset.usda
-)
-]
-);
-};
+
+```
+  button.onclick =
+    () => {
+
+      fillUSDA(
+        results[
+          Number(
+            button.dataset.usda
+          )
+        ]
+      );
+
+    };
+
 });
+```
+
 }
 
-/* -----------------------------
+/* =========================================
 FOOD SEARCH
------------------------------ */
+========================================= */
 
 $("foodName").oninput =
 event => {
-const query =
-event.target.value
-.trim()
-.toLowerCase();
 
 ```
-clearTimeout(usdaTimer);
+const query =
+  event.target.value
+    .trim()
+    .toLowerCase();
+
+
+clearTimeout(
+  usdaTimer
+);
+
 
 selectedBaseNutrition =
   null;
 
+
 if (!query) {
+
   $("suggestions").innerHTML =
     "";
 
   return;
 }
 
-/*
-  LOCAL SEARCH FIRST
-*/
+
+/* LOCAL DATABASE FIRST */
 
 const localResults =
   foods
@@ -569,44 +876,64 @@ const localResults =
     )
     .slice(0, 8);
 
-if (localResults.length) {
+
+if (
+  localResults.length
+) {
+
   showLocalResults(
     localResults
   );
+
 } else {
+
   $("suggestions").innerHTML = `
-    <div style="padding:10px;font-size:13px;">
+
+    <div
+      style="
+        padding:10px;
+        font-size:13px;
+      "
+    >
       Searching online foods...
     </div>
+
   `;
 }
 
-/*
-  USDA SEARCH SECONDARY
-*/
+
+/* USDA AS SECONDARY SOURCE */
 
 usdaTimer =
   setTimeout(
     async () => {
+
       const results =
         await searchUSDA(
           query
         );
 
+
       /*
-        Only replace local results
-        if USDA actually returned
-        something.
+         IMPORTANT:
+
+         Don't replace local
+         results with USDA results.
+
+         Local foods remain visible
+         even when USDA responds.
       */
 
       if (
         results.length &&
         !localResults.length
       ) {
+
         showUSDAResults(
           results
         );
       }
+
     },
     500
   );
@@ -614,43 +941,55 @@ usdaTimer =
 
 };
 
-/* -----------------------------
-QUANTITY CHANGE
------------------------------ */
+/* =========================================
+QUANTITY INPUT
+========================================= */
 
 $("quantityInput").oninput =
 () => {
+
+```
 updateNutritionFromQuantity();
+```
+
 };
 
 $("unitInput").onchange =
 () => {
-if (
-!selectedBaseNutrition
-) {
-$("quantityNote").textContent =
-"Select a food first.";
 
 ```
+if (
+  !selectedBaseNutrition
+) {
+
+  $("quantityNote").textContent =
+    "Select a food first.";
+
   return;
 }
+
 
 updateNutritionFromQuantity();
 ```
 
 };
 
-/* -----------------------------
+/* =========================================
 ADD MEAL
------------------------------ */
+========================================= */
 
 $("addMeal").onclick =
 () => {
-const name =
-$("foodName").value.trim();
 
 ```
+const name =
+  $("foodName")
+    .value
+    .trim();
+
+
 if (!name) {
+
   alert(
     "Please enter a food name."
   );
@@ -658,14 +997,18 @@ if (!name) {
   return;
 }
 
+
 const quantity =
   getQuantity();
+
 
 const unit =
   $("unitInput").value ||
   "g";
 
-state.meals.push({
+
+const meal = {
+
   name,
 
   quantity,
@@ -674,35 +1017,39 @@ state.meals.push({
 
   calories:
     Number(
-      $("caloriesInput")
-        .value
+      $("caloriesInput").value
     ) || 0,
 
   protein:
     Number(
-      $("proteinInput")
-        .value
+      $("proteinInput").value
     ) || 0,
 
   carbs:
     Number(
-      $("carbsInput")
-        .value
+      $("carbsInput").value
     ) || 0,
 
   fat:
     Number(
-      $("fatInput")
-        .value
+      $("fatInput").value
     ) || 0,
 
   photo:
     window.pendingPhoto ||
     ""
-});
+
+};
+
+
+state.meals.push(
+  meal
+);
+
 
 window.pendingPhoto =
   "";
+
 
 [
   "foodName",
@@ -712,20 +1059,27 @@ window.pendingPhoto =
   "carbsInput",
   "fatInput"
 ].forEach(id => {
+
   $(id).value = "";
+
 });
+
 
 $("unitInput").value =
   "g";
 
+
 $("quantityNote").textContent =
   "Select a food to calculate nutrition automatically.";
+
 
 $("suggestions").innerHTML =
   "";
 
+
 selectedBaseNutrition =
   null;
+
 
 save();
 render();
@@ -733,36 +1087,49 @@ render();
 
 };
 
-/* -----------------------------
+/* =========================================
 PHOTO
------------------------------ */
+========================================= */
 
 $("photoBtn").onclick =
 () => {
+
+```
 $("photoInput").click();
+```
+
 };
 
 $("photoInput").onchange =
 event => {
-const file =
-event.target.files[0];
 
 ```
+const file =
+  event.target.files[0];
+
+
 if (!file) {
   return;
 }
 
+
 const reader =
   new FileReader();
 
-reader.onload = () => {
-  window.pendingPhoto =
-    reader.result;
 
-  alert(
-    "Photo attached. Add the food details, then tap Add meal."
-  );
-};
+reader.onload =
+  () => {
+
+    window.pendingPhoto =
+      reader.result;
+
+
+    alert(
+      "Photo attached. Add the food details, then tap Add meal."
+    );
+
+  };
+
 
 reader.readAsDataURL(
   file
@@ -771,42 +1138,48 @@ reader.readAsDataURL(
 
 };
 
-/* -----------------------------
+/* =========================================
 WATER
------------------------------ */
+========================================= */
 
 $("waterBtn").onclick =
 () => {
-state.water =
-Math.min(
-GOALS.water,
-state.water + 0.25
-);
 
 ```
+state.water =
+  Math.min(
+    GOALS.water,
+    Number(state.water) +
+      0.25
+  );
+
+
 save();
 render();
 ```
 
 };
 
-/* -----------------------------
+/* =========================================
 RESET
------------------------------ */
+========================================= */
 
 $("resetDay").onclick =
 () => {
-if (
-confirm(
-"Reset today's meals and water?"
-)
-) {
-state = {
-meals: [],
-water: 0
-};
 
 ```
+if (
+  confirm(
+    "Reset today's meals and water?"
+  )
+) {
+
+  state = {
+    meals: [],
+    water: 0
+  };
+
+
   save();
   render();
 }
@@ -814,25 +1187,47 @@ water: 0
 
 };
 
-/* -----------------------------
-START
------------------------------ */
+/* =========================================
+START APP
+========================================= */
 
-loadFoods().then(() => {
+async function startApp() {
+
+await loadFoods();
+
 render();
-});
+
+}
+
+startApp();
+
+/* =========================================
+SERVICE WORKER
+========================================= */
 
 if (
 "serviceWorker" in navigator
 ) {
+
 window.addEventListener(
 "load",
 () => {
-navigator.serviceWorker
-.register(
-"./service-worker.js"
-)
-.catch(() => {});
+
+```
+  navigator.serviceWorker
+    .register(
+      "./service-worker.js"
+    )
+    .catch(
+      error =>
+        console.warn(
+          "Service worker registration failed:",
+          error
+        )
+    );
+
 }
+```
+
 );
 }
