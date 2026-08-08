@@ -1,28 +1,19 @@
-export default async function handler(request) {
+export default async function handler(req, res) {
   try {
-    const url = new URL(request.url);
-    const query = url.searchParams.get("query");
+    const query = req.query?.query;
 
     if (!query) {
-      return new Response(
-        JSON.stringify({ error: "Missing query" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      return res.status(400).json({
+        error: "Missing query"
+      });
     }
 
     const apiKey = process.env.USDA_API_KEY;
 
     if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: "USDA_API_KEY is not configured" }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" }
-        }
-      );
+      return res.status(500).json({
+        error: "USDA_API_KEY is not configured"
+      });
     }
 
     const usdaUrl =
@@ -35,23 +26,14 @@ export default async function handler(request) {
 
     const data = await response.json();
 
-    return new Response(JSON.stringify(data), {
-      status: response.status,
-      headers: {
-        "Content-Type": "application/json"
-      }
-    });
+    return res.status(response.status).json(data);
 
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error: "Server error",
-        details: error.message
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" }
-      }
-    );
+    console.error("USDA API error:", error);
+
+    return res.status(500).json({
+      error: "Server error",
+      details: error.message
+    });
   }
 }
